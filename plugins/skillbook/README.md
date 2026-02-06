@@ -2,7 +2,16 @@
 
 Pokemon Pokedex-style skill dashboard for Claude Code. Every skill you use becomes a collectible card with levels, rarity, and achievements.
 
-## How It Works
+## Quick Start
+
+```bash
+/skillbook install     # Auto-setup everything
+/skillbook             # Open dashboard
+```
+
+That's it. No manual configuration needed. The installer handles copying files, merging hooks, and creating config.
+
+## What It Does
 
 ```
 1. You use any /skill (e.g., /commit, /study, /interview)
@@ -10,58 +19,6 @@ Pokemon Pokedex-style skill dashboard for Claude Code. Every skill you use becom
 3. /skillbook opens a web dashboard showing your collection
 4. Skills level up and earn rarity stars as you use them more
 ```
-
-## Installation
-
-### Step 1: Install Plugin
-
-```bash
-# Via marketplace
-/plugin marketplace add JeonJe/claude-plugins
-/plugin install skillbook
-
-# Or manually
-git clone https://github.com/JeonJe/claude-plugins.git
-cp -r claude-plugins/plugins/skillbook/skills/skillbook ~/.claude/skills/
-```
-
-### Step 2: Enable Auto-Tracking (Required)
-
-Add the usage tracking hook to `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/skills/skillbook/hooks/skill-usage-tracker.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-> **Note**: If you already have `UserPromptSubmit` hooks, add the new hook entry to the existing array.
-
-After adding the hook, copy it to the skill directory:
-
-```bash
-cp -r claude-plugins/plugins/skillbook/hooks ~/.claude/skills/skillbook/
-```
-
-### Step 3: Verify
-
-```bash
-# Use any skill, then check if it was tracked:
-/skillbook stats
-```
-
-You should see `Total Uses: 1x` after using your first skill.
 
 ## Usage
 
@@ -73,6 +30,10 @@ You should see `Total Uses: 1x` after using your first skill.
 | `/skillbook pinned` | Show pinned/favorite skills |
 | `/skillbook pin <name>` | Toggle favorite on a skill |
 | `/skillbook <category>` | Filter by category (e.g., `study`, `git`, `code`) |
+| `/skillbook install` | Auto-setup: copy files, merge hooks, create config |
+| `/skillbook uninstall` | Remove hooks (keeps skill files) |
+| `/skillbook uninstall --purge` | Remove hooks + skill files (keeps stats) |
+| `/skillbook status` | Show installation health |
 
 ## Screenshots
 
@@ -170,16 +131,17 @@ Interactive HTML dashboard with:
 - Workflow recommendations
 - Click any card for detailed skill info
 
-## Configuration
+## Configuration (Optional)
 
 **Zero config required.** Stats auto-save to `~/.claude/skillbook-stats.json`.
 
-To customize (e.g., sync with Obsidian vault), create `~/.claude/skillbook.config.json`:
+To customize (e.g., move stats to Obsidian vault), create `~/.claude/skillbook.config.json`:
 
 ```json
 {
   "statsFile": "~/path/to/your/skill-stats.json",
-  "outputDir": "~/path/to/dashboard/output"
+  "outputDir": "~/path/to/dashboard/output",
+  "language": "en"
 }
 ```
 
@@ -187,17 +149,99 @@ To customize (e.g., sync with Obsidian vault), create `~/.claude/skillbook.confi
 |-----|---------|-------------|
 | `statsFile` | `~/.claude/skillbook-stats.json` | Where usage data is stored |
 | `outputDir` | `~/.claude/skillbook/` | Where dashboard HTML is generated |
+| `language` | `en` | Dashboard language (`en` or `ko`) |
+
+## Manual Installation
+
+<details>
+<summary>Click to expand manual steps (not recommended - use /skillbook install instead)</summary>
+
+### Step 1: Install Plugin
+
+```bash
+# Via marketplace
+/plugin marketplace add JeonJe/claude-plugins
+/plugin install skillbook
+
+# Or manually
+git clone https://github.com/JeonJe/claude-plugins.git
+cp -r claude-plugins/plugins/skillbook/skills/skillbook ~/.claude/skills/
+```
+
+### Step 2: Enable Auto-Tracking (Required)
+
+Add the usage tracking hook to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/skill-usage-tracker.py"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> **Note**: If you already have `UserPromptSubmit` hooks, add the new hook entry to the existing array.
+
+Copy the hook file:
+
+```bash
+cp claude-plugins/plugins/skillbook/hooks/skill-usage-tracker.py ~/.claude/hooks/
+chmod +x ~/.claude/hooks/skill-usage-tracker.py
+```
+
+### Step 3: Verify
+
+```bash
+# Use any skill, then check if it was tracked:
+/skillbook stats
+```
+
+You should see `Total Uses: 1x` after using your first skill.
+
+</details>
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `/skillbook install` fails | Run `/skillbook status` to see what's missing. Check Python version: `python3 --version` should be 3.8+ |
+| Hook not tracking skills | Verify `~/.claude/settings.json` has a `UserPromptSubmit` entry with the hook command. Run `/skillbook status` to verify. |
+| Dashboard won't open | Make sure Python 3.8+ is installed: `python3 --version`. Try `/skillbook terminal stats` to check if tracking works. |
+| Stats not updating | Check that hook is executable: `ls -l ~/.claude/hooks/skill-usage-tracker.py` should show `x`. Verify config path in `~/.claude/skillbook.config.json`. |
+| "Permission denied" on hook | Fix executable permission: `chmod +x ~/.claude/hooks/skill-usage-tracker.py` |
+| Existing hook conflict | If you have an old hook installed, uninstall first: `/skillbook uninstall`, then `/skillbook install` |
+
+## Uninstall
+
+Remove skillbook from your system:
+
+```bash
+/skillbook uninstall           # Remove hooks only (keeps stats and skill files)
+/skillbook uninstall --purge   # Remove hooks + skill files (keeps stats as backup)
+```
+
+**Note**: Stats file is never deleted. Your data is safe.
 
 ## File Structure
 
 ```
 skillbook/
 ├── hooks/
-│   └── skill-usage-tracker.sh   # Auto-counts /skill usage (UserPromptSubmit hook)
+│   └── skill-usage-tracker.py   # Auto-counts /skill usage (UserPromptSubmit hook)
 ├── skills/skillbook/
 │   ├── SKILL.md                  # Skill definition for Claude
 │   ├── skillbook.py              # CLI interface
 │   ├── skillbook_dashboard.py    # Web dashboard generator
+│   ├── installer.py              # Auto-installer
 │   ├── config/                   # Category, level, rarity docs
 │   └── templates/                # Card format templates
 ├── .claude-plugin/plugin.json
@@ -207,9 +251,8 @@ skillbook/
 ## Requirements
 
 - Python 3.8+
-- `jq` (for hook shell script)
 - Browser (for dashboard)
-- No Python packages required (stdlib only)
+- No other dependencies (no `jq`, no npm packages)
 
 ## License
 

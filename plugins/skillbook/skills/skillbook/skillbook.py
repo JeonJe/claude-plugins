@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Skillbook - Pokemon Pokedex-style skill tracker for Claude Code
-Usage: python skillbook.py [dashboard|terminal|stats|pin <skill>|use <skill>]
+Usage: python skillbook.py [dashboard|terminal|stats|pin <skill>|use <skill>|install|uninstall|status]
 """
 
 import json
@@ -383,6 +383,23 @@ def increment_usage(skill_name, stats):
 
 def main(args=None):
     args = args or sys.argv[1:]
+
+    # Install/uninstall/status subcommands (handled before dashboard/terminal routing)
+    if args and args[0].lower() == "install":
+        from installer import install
+        install()
+        return
+
+    if args and args[0].lower() == "uninstall":
+        from installer import uninstall
+        purge = "--purge" in args
+        uninstall(purge=purge)
+        return
+
+    if args and args[0].lower() == "status":
+        from installer import status
+        status()
+        return
 
     # Terminal mode - explicit text output
     if args and args[0].lower() in ["terminal", "term", "text", "cli"]:

@@ -28,6 +28,21 @@ model: haiku
 - Action: Text-based output in CLI
 - Output: Compact skill list with levels and rarity
 
+**5. Install/Setup**
+- Input: "skillbook install", "setup skillbook"
+- Action: Run automatic installer (setup hooks, config, files)
+- Output: Installation status with component verification
+
+**6. Uninstall**
+- Input: "skillbook uninstall"
+- Action: Remove hooks and optionally skill files
+- Output: Uninstallation summary
+
+**7. Check Status**
+- Input: "skillbook status"
+- Action: Verify all components are correctly installed
+- Output: Component health check table
+
 ## Don't use when
 
 - Skill quality audit -> use **skill-audit** instead
@@ -35,8 +50,24 @@ model: haiku
 
 ## Execution
 
+Default (dashboard):
 ```bash
 python3 <SKILL_DIR>/skillbook.py dashboard
+```
+
+Install:
+```bash
+python3 <SKILL_DIR>/skillbook.py install
+```
+
+Uninstall:
+```bash
+python3 <SKILL_DIR>/skillbook.py uninstall
+```
+
+Check status:
+```bash
+python3 <SKILL_DIR>/skillbook.py status
 ```
 
 Runs immediately on skill invocation, outputs directly.
