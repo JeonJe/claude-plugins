@@ -91,6 +91,16 @@ Unlock badges, get personalized skill suggestions, and follow recommended skill 
 
 ![Panels](../../assets/dashboard-panels.png)
 
+### Undiscovered Skills
+Skills you haven't used yet appear as mysterious silhouettes, waiting to be discovered.
+
+![Undiscovered Cards](../../assets/skill-cards-bottom.png)
+
+### Skill Detail Modal
+Click any card to see detailed stats, level, last used date, and quick copy command.
+
+![Detail Modal](../../assets/skill-detail-modal.png)
+
 ## Features
 
 ### Skill Cards
