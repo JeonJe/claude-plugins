@@ -144,14 +144,21 @@ Unlock badges as you reach milestones:
 ### Categories
 Skills are auto-categorized by keyword matching:
 
-| Category | Keywords | Example Skills |
-|----------|----------|----------------|
-| 📁 Git | commit, pr, branch | /commit, /worktree |
-| 💻 Code | code, review, refactor | /code-review, /build-fix |
-| 📚 Study | study, gg, interview | /study, /gg, /interview |
-| 🧩 Algo | algo | /algo-start, /algo-learn |
-| 🎯 PM | jira, jd, ticket | /jira-ticket, /jd-update |
-| ✨ Misc | (fallback) | /skillbook, /work-log |
+| Category | Keywords | How It Works |
+|----------|----------|--------------|
+| 📁 Git | commit, pr, branch, worktree, git | If skill name contains "commit" → Git category |
+| 💻 Code | code, review, refactor, fix | If skill name contains "review" → Code category |
+| 🧪 Test | test, e2e, coverage | If skill name contains "test" → Test category |
+| 📝 Docs | doc, update-docs, codemaps | If skill name contains "doc" → Docs category |
+| 📋 Plan | plan, issue, clarify | If skill name contains "plan" → Plan category |
+| 📚 Study | study, gg, interview, learn | If skill name contains "study" → Study category |
+| 📄 Resume | resume | If skill name contains "resume" → Resume category |
+| 🧩 Algo | algo | If skill name contains "algo" → Algo category |
+| 🎯 PM | jira, jd, ticket, agile | If skill name contains "jira" → PM category |
+| 🔌 Plugin | sisyphus, council, calendar | Plugin-related skills |
+| ✨ Misc | (no match) | Fallback for unmatched skills |
+
+**Example:** Your skill `/my-code-review` automatically goes to 💻 Code category because it contains "review".
 
 ### Web Dashboard
 Interactive HTML dashboard with:
