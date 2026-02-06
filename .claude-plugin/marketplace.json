@@ -1,0 +1,15 @@
+{
+  "name": "jeonje-plugins",
+  "owner": {
+    "name": "JeonJe",
+    "url": "https://github.com/JeonJe"
+  },
+  "description": "Claude Code plugins for developer productivity, learning, and career growth",
+  "plugins": [
+    {
+      "name": "skillbook",
+      "description": "Pokemon Pokedex-style skill dashboard with usage tracking, leveling system, achievements, and visual analytics",
+      "source": "./plugins/skillbook"
+    }
+  ]
+}

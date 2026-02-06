@@ -1,0 +1,13 @@
+{
+  "name": "skillbook",
+  "version": "1.0.0",
+  "description": "Pokemon Pokedex-style skill dashboard with usage tracking, leveling system, achievements, and visual analytics",
+  "author": {
+    "name": "JeonJe",
+    "url": "https://github.com/JeonJe"
+  },
+  "repository": "https://github.com/JeonJe/claude-plugins",
+  "license": "MIT",
+  "keywords": ["claude-code", "plugin", "skill-tracking", "dashboard", "pokemon", "pokedex", "analytics"],
+  "skills": "./skills/skillbook"
+}

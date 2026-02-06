@@ -1,0 +1,10 @@
+{
+  "name": "claude-plugins",
+  "version": "0.1.0",
+  "description": "A collection of Claude Code plugins for developer productivity, learning, and career growth",
+  "author": {
+    "name": "JeonJe",
+    "url": "https://github.com/JeonJe"
+  },
+  "repository": "https://github.com/JeonJe/claude-plugins"
+}
