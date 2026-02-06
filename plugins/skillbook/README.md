@@ -77,27 +77,26 @@ You should see `Total Uses: 1x` after using your first skill.
 ## Screenshots
 
 ### Dashboard Overview
-Stats, achievements, recommendations, workflows, category progress, and usage trends at a glance.
+
+See your entire skill journey at a glance: total discovered skills, cumulative level, achievement badges, personalized recommendations, workflow sequences, category progress bars, and a 7-day usage trend chart. Know exactly where you stand and what to explore next.
 
 ![Dashboard Overview](../../assets/dashboard-full.png)
 
 ### Skill Cards
-Each skill gets a unique Pokemon sprite. Cards show level, rarity stars, category, and usage count. Undiscovered skills appear as silhouettes.
+
+Every skill you use becomes a collectible card with its own Pokemon sprite (determined by skill name), level, rarity stars, category badge, and usage count. Pinned favorites appear first. Instantly see which skills you rely on most and which categories you're building expertise in.
 
 ![Skill Cards](../../assets/skill-cards.png)
 
-### Achievements, Recommendations & Workflows
-Unlock badges, get personalized skill suggestions, and follow recommended skill sequences.
-
-![Panels](../../assets/dashboard-panels.png)
-
 ### Undiscovered Skills
-Skills you haven't used yet appear as mysterious silhouettes, waiting to be discovered.
+
+Skills you haven't tried yet appear as dark silhouettes at the bottom of your collection, encouraging you to experiment with new workflows. The contrast between colorful discovered cards and shadowed unknowns creates a natural motivation to "catch 'em all."
 
 ![Undiscovered Cards](../../assets/skill-cards-bottom.png)
 
 ### Skill Detail Modal
-Click any card to see detailed stats, level, last used date, and quick copy command.
+
+Click any card to open a detailed view with total uses, current level, and last-used date. A one-click copy button lets you paste the skill command directly into Claude Code.
 
 ![Detail Modal](../../assets/skill-detail-modal.png)
 
