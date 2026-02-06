@@ -82,9 +82,48 @@ def _should_skip(name):
     return name in SKIP_PATTERNS or name.endswith(".pyc")
 
 
+def _validate_stats_path(path_str):
+    """Validate that stats path is within safe boundaries.
+
+    Args:
+        path_str: Path string to validate
+
+    Returns:
+        Path: Validated and resolved path
+
+    Raises:
+        ValueError: If path is outside ~/.claude/ directory
+    """
+    path = Path(path_str).expanduser().resolve()
+    claude_dir = CLAUDE_DIR.resolve()
+
+    try:
+        path.relative_to(claude_dir)
+    except ValueError:
+        raise ValueError(
+            f"Stats file must be within {claude_dir}.\n"
+            f"         Got: {path}"
+        )
+
+    return path
+
+
 def _resolve_source_dir():
-    """Return the skill source directory (where this installer.py lives)."""
-    return Path(__file__).resolve().parent
+    """Return the skill source directory (where this installer.py lives).
+
+    Raises:
+        RuntimeError: If the source directory is a symbolic link.
+    """
+    source = Path(__file__)
+
+    # Check for symbolic link attack
+    if source.is_symlink():
+        raise RuntimeError(
+            f"Security: installer.py is a symbolic link.\n"
+            f"         This may indicate a malicious setup."
+        )
+
+    return source.resolve().parent
 
 
 def _resolve_hook_source():
@@ -221,6 +260,8 @@ def detect_existing_install():
 def copy_skill_files():
     """Copy skill files from the repo to ~/.claude/skills/skillbook/.
 
+    Creates a timestamped backup if skill files already exist.
+
     Returns:
         True on success, False on failure.
     """
@@ -231,6 +272,12 @@ def copy_skill_files():
 
     try:
         SKILL_INSTALL_DIR.parent.mkdir(parents=True, exist_ok=True)
+
+        # Backup existing installation
+        if SKILL_INSTALL_DIR.exists() and (SKILL_INSTALL_DIR / "skillbook.py").exists():
+            backup_dir = SKILL_INSTALL_DIR.with_name(f"skillbook.bak.{_timestamp()}")
+            shutil.copytree(SKILL_INSTALL_DIR, backup_dir)
+            _print_info(f"Backup: {backup_dir}")
 
         shutil.copytree(
             source_dir,
@@ -617,8 +664,8 @@ def _find_stats_path():
             with open(CONFIG_FILE, encoding="utf-8") as f:
                 cfg = json.load(f)
             if "statsFile" in cfg:
-                return Path(cfg["statsFile"]).expanduser().resolve()
-        except (OSError, json.JSONDecodeError):
+                return _validate_stats_path(cfg["statsFile"])
+        except (OSError, json.JSONDecodeError, ValueError):
             pass
     return CLAUDE_DIR / "skillbook-stats.json"
 

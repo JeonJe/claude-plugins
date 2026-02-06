@@ -62,6 +62,28 @@ def resolve_alias(command):
     return ALIASES.get(command, command)
 
 
+def validate_stats_path(path_str):
+    """
+    Validate that stats path is within safe boundaries.
+
+    Args:
+        path_str: Path string to validate
+
+    Returns:
+        Path: Validated and resolved path, or None if invalid
+
+    Security: Restricts stats file to ~/.claude/ directory to prevent
+    path traversal attacks via malicious config files.
+    """
+    try:
+        path = Path(os.path.expanduser(path_str)).resolve()
+        claude_dir = (Path.home() / ".claude").resolve()
+        path.relative_to(claude_dir)
+        return path
+    except (ValueError, OSError):
+        return None
+
+
 def get_stats_path():
     """
     Determine the stats file path.
@@ -77,7 +99,9 @@ def get_stats_path():
                 cfg = json.load(f)
             raw = cfg.get("statsFile", "")
             if raw:
-                return Path(os.path.expanduser(raw)).resolve()
+                validated = validate_stats_path(raw)
+                if validated:
+                    return validated
         except (OSError, json.JSONDecodeError, TypeError):
             pass
 
@@ -176,6 +200,7 @@ def write_stats_atomic(stats_path, stats):
     """
     Write stats to file atomically.
     Uses a temporary file + rename to prevent data corruption on crash.
+    Sets file permissions to 0600 (owner read/write only) for security.
     """
     stats_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -189,6 +214,10 @@ def write_stats_atomic(stats_path, stats):
         with os.fdopen(fd, "w") as f:
             json.dump(stats, f, indent=2, ensure_ascii=False)
             f.write("\n")
+
+        # Set secure permissions (owner read/write only)
+        os.chmod(tmp_path, 0o600)
+
         os.replace(tmp_path, str(stats_path))
     except OSError:
         # Clean up temp file on failure
