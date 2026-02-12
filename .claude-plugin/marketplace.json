@@ -10,6 +10,11 @@
       "name": "skillbook",
       "description": "Pokemon Pokedex-style skill dashboard with usage tracking, leveling system, achievements, and visual analytics",
       "source": "./plugins/skillbook"
+    },
+    {
+      "name": "claude-notify",
+      "description": "Floating notification panel for Claude Code using Hammerspoon with tmux session navigation and type filtering",
+      "source": "./plugins/claude-notify"
     }
   ]
 }
