@@ -106,9 +106,25 @@ else
     echo "  ✗ tmux not found (navigation will focus terminal app only)"
 fi
 
-# ─── 4. Language ───────────────────────────────────────────────────
+# ─── 4. Theme ─────────────────────────────────────────────────────
 echo ""
-echo "▶ [4/6] Notification language"
+echo "▶ [4/7] Default theme"
+echo "    1) Dark (default)"
+echo "    2) Light"
+echo ""
+read -p "  Choice [1-2]: " theme_choice
+
+if [ "$theme_choice" = "2" ]; then
+    THEME="light"
+    echo "  → Theme: Light"
+else
+    THEME="dark"
+    echo "  → Theme: Dark"
+fi
+
+# ─── 5. Language ───────────────────────────────────────────────────
+echo ""
+echo "▶ [5/7] Notification language"
 echo "    1) English"
 echo "    2) 한국어 (Korean)"
 echo ""
@@ -116,19 +132,15 @@ read -p "  Choice [1-2]: " lang_choice
 
 if [ "$lang_choice" = "2" ]; then
     LANG_CODE="ko"
-    MSG_INPUT="🔔 Yo!"
-    MSG_DONE="✅ Ta-da!"
     echo "  → Language: 한국어"
 else
     LANG_CODE="en"
-    MSG_INPUT="🔔 Yo!"
-    MSG_DONE="✅ Ta-da!"
     echo "  → Language: English"
 fi
 
-# ─── 5. Hotkey ─────────────────────────────────────────────────────
+# ─── 6. Hotkey ─────────────────────────────────────────────────────
 echo ""
-echo "▶ [5/6] Toggle hotkey"
+echo "▶ [6/7] Toggle hotkey"
 echo "  Default: Ctrl+Shift+N"
 read -p "  Use default? (Y/n): " hotkey_answer
 
@@ -144,9 +156,9 @@ else
 fi
 echo "  → Hotkey: ${HOTKEY_MODS}+${HOTKEY_KEY}"
 
-# ─── 6. Port ──────────────────────────────────────────────────────
+# ─── 7. Port ──────────────────────────────────────────────────────
 echo ""
-echo "▶ [6/6] HTTP callback port"
+echo "▶ [7/7] HTTP callback port"
 echo "  Default: 17839"
 read -p "  Port [17839]: " port_input
 PORT="${port_input:-17839}"
@@ -180,6 +192,7 @@ return {
     hotkey_mods = { ${LUA_MODS} },
     hotkey_key = "${HOTKEY_KEY}",
     lang = "${LANG_CODE}",
+    theme = "${THEME}",
     panel = {
         width = 320,
         height = 420,
@@ -212,14 +225,14 @@ echo "━━━ Claude Code Hook Settings ━━━"
 echo ""
 echo "Add to ~/.claude/settings.json under \"hooks\":"
 echo ""
-cat << JSONEOF
+cat << 'JSONEOF'
     "Notification": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/notify.sh '${MSG_INPUT}'"
+            "command": "bash ~/.claude/hooks/notify.sh notification"
           }
         ]
       }
@@ -229,7 +242,7 @@ cat << JSONEOF
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/notify.sh '${MSG_DONE}'"
+            "command": "bash ~/.claude/hooks/notify.sh stop"
           }
         ]
       }
