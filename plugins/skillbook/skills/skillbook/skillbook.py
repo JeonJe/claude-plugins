@@ -23,6 +23,25 @@ INSTALLED_PLUGINS_FILE = PLUGINS_DIR / "installed_plugins.json"
 CONFIG_FILE = CLAUDE_DIR / "skillbook.config.json"
 
 
+def _validate_user_path(path_str):
+    """Allow only paths under the current user's home directory."""
+    try:
+        path = Path(path_str).expanduser().resolve()
+        path.relative_to(HOME.resolve())
+        return path
+    except (OSError, ValueError):
+        return None
+
+
+def _default_stats():
+    return {
+        "version": 1,
+        "lastUpdated": datetime.now().strftime("%Y-%m-%d"),
+        "totalUses": 0,
+        "skills": {},
+    }
+
+
 def _load_config():
     """Load config from ~/.claude/skillbook.config.json if exists.
 
@@ -40,7 +59,11 @@ def _load_config():
             result = {}
             for k, v in cfg.items():
                 if isinstance(v, str):
-                    result[k] = Path(v).expanduser().resolve()
+                    validated = _validate_user_path(v)
+                    if validated:
+                        result[k] = validated
+                    else:
+                        print(f"⚠️  Ignoring unsafe config path for '{k}': {v}", file=sys.stderr)
             return result
         except json.JSONDecodeError as e:
             print(f"\u26a0\ufe0f  Malformed config at {CONFIG_FILE}: line {e.lineno}", file=sys.stderr)
@@ -72,9 +95,20 @@ CATEGORIES = {
 def load_stats():
     """Load stats from JSON file"""
     if STATS_FILE.exists():
-        with open(STATS_FILE) as f:
-            return json.load(f)
-    return {"version": 1, "lastUpdated": datetime.now().strftime("%Y-%m-%d"), "totalUses": 0, "skills": {}}
+        try:
+            with open(STATS_FILE) as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            backup = STATS_FILE.with_name(f"{STATS_FILE.name}.corrupt-{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            try:
+                STATS_FILE.rename(backup)
+                print(f"⚠️  Corrupt stats file moved to: {backup}", file=sys.stderr)
+            except OSError:
+                pass
+            print(f"⚠️  Failed to parse stats JSON ({STATS_FILE}:{e.lineno}). Resetting stats.", file=sys.stderr)
+        except OSError as e:
+            print(f"⚠️  Cannot read stats file {STATS_FILE}: {e}", file=sys.stderr)
+    return _default_stats()
 
 
 def save_stats(stats):

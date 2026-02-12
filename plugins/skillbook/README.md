@@ -144,11 +144,12 @@ To customize (e.g., move stats to Obsidian vault), create `~/.claude/skillbook.c
   "language": "en"
 }
 ```
+`statsFile` and `outputDir` must be under your home directory (`~`).
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `statsFile` | `~/.claude/skillbook-stats.json` | Where usage data is stored |
-| `outputDir` | `~/.claude/skillbook/` | Where dashboard HTML is generated |
+| `statsFile` | `~/.claude/skillbook-stats.json` | Where usage data is stored (any path under `~`) |
+| `outputDir` | `~/.claude/skillbook/` | Where dashboard HTML is generated (any path under `~`) |
 | `language` | `en` | Dashboard language (`en` or `ko`) |
 
 ## Manual Installation

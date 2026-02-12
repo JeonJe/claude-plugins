@@ -72,13 +72,12 @@ def validate_stats_path(path_str):
     Returns:
         Path: Validated and resolved path, or None if invalid
 
-    Security: Restricts stats file to ~/.claude/ directory to prevent
-    path traversal attacks via malicious config files.
+    Security: Restricts stats file to current user's home directory.
     """
     try:
         path = Path(os.path.expanduser(path_str)).resolve()
-        claude_dir = (Path.home() / ".claude").resolve()
-        path.relative_to(claude_dir)
+        home_dir = Path.home().resolve()
+        path.relative_to(home_dir)
         return path
     except (ValueError, OSError):
         return None

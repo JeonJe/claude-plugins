@@ -19,6 +19,25 @@ COMMANDS_DIR = CLAUDE_DIR / "commands"
 CONFIG_FILE = CLAUDE_DIR / "skillbook.config.json"
 
 
+def _validate_user_path(path_str):
+    """Allow only paths under the current user's home directory."""
+    try:
+        path = Path(path_str).expanduser().resolve()
+        path.relative_to(HOME.resolve())
+        return path
+    except (OSError, ValueError):
+        return None
+
+
+def _default_stats():
+    return {
+        "version": 1,
+        "lastUpdated": datetime.now().strftime("%Y-%m-%d"),
+        "totalUses": 0,
+        "skills": {},
+    }
+
+
 def _load_config():
     """Load config from ~/.claude/skillbook.config.json if exists.
 
@@ -36,7 +55,11 @@ def _load_config():
             result = {}
             for k, v in cfg.items():
                 if isinstance(v, str):
-                    result[k] = Path(v).expanduser().resolve()
+                    validated = _validate_user_path(v)
+                    if validated:
+                        result[k] = validated
+                    else:
+                        print(f"⚠️  Ignoring unsafe config path for '{k}': {v}", file=sys.stderr)
             return result
         except json.JSONDecodeError as e:
             print(f"\u26a0\ufe0f  Malformed config at {CONFIG_FILE}: line {e.lineno}", file=sys.stderr)
@@ -89,9 +112,20 @@ ACHIEVEMENTS = [
 
 def load_stats():
     if STATS_FILE.exists():
-        with open(STATS_FILE) as f:
-            return json.load(f)
-    return {"version": 1, "lastUpdated": datetime.now().strftime("%Y-%m-%d"), "totalUses": 0, "skills": {}}
+        try:
+            with open(STATS_FILE) as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            backup = STATS_FILE.with_name(f"{STATS_FILE.name}.corrupt-{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            try:
+                STATS_FILE.rename(backup)
+                print(f"⚠️  Corrupt stats file moved to: {backup}", file=sys.stderr)
+            except OSError:
+                pass
+            print(f"⚠️  Failed to parse stats JSON ({STATS_FILE}:{e.lineno}). Resetting stats.", file=sys.stderr)
+        except OSError as e:
+            print(f"⚠️  Cannot read stats file {STATS_FILE}: {e}", file=sys.stderr)
+    return _default_stats()
 
 def get_category(skill_name):
     for cat_id, cat_info in CATEGORIES.items():
@@ -167,7 +201,7 @@ def parse_skill_md(skill_file):
             result["workflow"] = workflow_match.group(1).strip()[:500]
 
         return result
-    except Exception as e:
+    except (OSError, UnicodeDecodeError, re.error):
         return {"description": "", "fullContent": "", "useCases": [], "triggers": [], "dontUse": [], "workflow": ""}
 
 def scan_local_skills():
@@ -220,7 +254,7 @@ def scan_plugin_skills():
     try:
         with open(plugins_file) as f:
             installed = json.load(f)
-    except:
+    except (OSError, json.JSONDecodeError):
         return skills
     for plugin_name, installs in installed.get("plugins", {}).items():
         for install in installs:
@@ -286,12 +320,10 @@ def get_recommendations(skills_data, stats):
 
     # 1. Unused skills in active categories
     active_cats = set()
-    for s in stats.get("skills", {}).values():
-        if s.get("uses", 0) > 0:
-            for skill_name in stats.get("skills", {}).keys():
-                if stats["skills"][skill_name].get("uses", 0) > 0:
-                    cat_id, _ = get_category(skill_name)
-                    active_cats.add(cat_id)
+    for skill_name, skill_info in stats.get("skills", {}).items():
+        if skill_info.get("uses", 0) > 0:
+            cat_id, _ = get_category(skill_name)
+            active_cats.add(cat_id)
 
     for skill in skills_data:
         if skill["uses"] == 0 and skill["category"] in active_cats:

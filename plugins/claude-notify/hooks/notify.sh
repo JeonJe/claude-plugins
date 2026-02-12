@@ -4,7 +4,14 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/notify-config.sh"
 
 # Read hook context JSON from stdin (Claude Code pipes it)
-read -t 1 CONTEXT 2>/dev/null || CONTEXT='{}'
+if [ -t 0 ]; then
+    CONTEXT='{}'
+else
+    CONTEXT="$(cat)"
+    if [ -z "$CONTEXT" ]; then
+        CONTEXT='{}'
+    fi
+fi
 
 PROJECT=$(basename "$PWD" 2>/dev/null || echo '')
 PANE_ID="none"
@@ -22,7 +29,7 @@ import json, sys, os
 hook_type = os.environ.get("HOOK_TYPE", "")
 try:
     ctx = json.load(sys.stdin)
-except:
+except json.JSONDecodeError:
     ctx = {}
 
 event = ctx.get("hook_event_name", "")

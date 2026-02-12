@@ -92,16 +92,16 @@ def _validate_stats_path(path_str):
         Path: Validated and resolved path
 
     Raises:
-        ValueError: If path is outside ~/.claude/ directory
+        ValueError: If path is outside current user's home directory
     """
     path = Path(path_str).expanduser().resolve()
-    claude_dir = CLAUDE_DIR.resolve()
+    home_dir = HOME.resolve()
 
     try:
-        path.relative_to(claude_dir)
+        path.relative_to(home_dir)
     except ValueError:
         raise ValueError(
-            f"Stats file must be within {claude_dir}.\n"
+            f"Stats file must be within {home_dir}.\n"
             f"         Got: {path}"
         )
 

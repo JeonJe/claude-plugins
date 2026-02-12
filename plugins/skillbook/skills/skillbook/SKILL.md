@@ -82,3 +82,4 @@ Custom location: create `~/.claude/skillbook.config.json`:
   "statsFile": "~/your/path/skill-stats.json"
 }
 ```
+`statsFile` must be under your home directory (`~`).
