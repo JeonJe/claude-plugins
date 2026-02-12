@@ -17,6 +17,7 @@ A collection of Claude Code plugins for developer productivity, learning, and ca
 | Plugin | Description |
 |--------|-------------|
 | [skillbook](./plugins/skillbook) | Pokemon Pokedex-style skill dashboard with auto-tracking, leveling, and achievements |
+| [claude-notify](./plugins/claude-notify) | Floating notification panel with tmux navigation and type filtering (Hammerspoon, macOS) |
 
 ## Contributing
 

@@ -1,0 +1,13 @@
+{
+  "name": "claude-notify",
+  "version": "1.0.0",
+  "description": "Floating notification panel for Claude Code using Hammerspoon. Shows input needed/response complete alerts with tmux session navigation.",
+  "author": {
+    "name": "JeonJe",
+    "url": "https://github.com/JeonJe"
+  },
+  "repository": "https://github.com/JeonJe/claude-plugins",
+  "license": "MIT",
+  "keywords": ["claude-code", "notification", "hammerspoon", "tmux", "macos"],
+  "note": "This plugin uses Hammerspoon (macOS only) instead of the standard Claude Code skill/hook pattern. Install via setup.sh, not /plugin install."
+}
