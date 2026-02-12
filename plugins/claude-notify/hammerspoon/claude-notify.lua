@@ -47,6 +47,7 @@ local callbackServer = nil
 local panelState = {
     alpha = cfg.panel.alpha,
     filter = "all", -- "all", "input", "done"
+    fontSize = 13,
 }
 
 -- ─── HTTP callback server ─────────────────────────────────────────
@@ -67,6 +68,12 @@ callbackServer:setCallback(function(_, path)
         end
     elseif path:match("^/readall") then
         ClaudeNotify.markAllRead()
+    elseif path:match("^/fontsize/") then
+        local val = tonumber(path:match("^/fontsize/([%d]+)"))
+        if val then
+            panelState.fontSize = val
+            ClaudeNotify.updatePanel()
+        end
     elseif path:match("^/filter/") then
         local mode = path:match("^/filter/(%a+)")
         if mode then
@@ -149,6 +156,7 @@ function ClaudeNotify.markAllRead()
 end
 
 function ClaudeNotify.setAlpha(value)
+    if value < 0.1 then value = 0.1 end
     panelState.alpha = value
     if webview then
         webview:alpha(value)
@@ -296,7 +304,7 @@ function ClaudeNotify.generateHTML()
         background: #161625;
         color: #d4d4e0;
         padding: 0;
-        font-size: 13px;
+        font-size: %dpx;
         -webkit-user-select: none;
         display: flex;
         flex-direction: column;
@@ -484,12 +492,19 @@ function ClaudeNotify.generateHTML()
 
     .controls {
         flex-shrink: 0;
-        padding: 8px 14px;
+        padding: 6px 14px;
         background: #1e1e35;
         border-top: 1px solid #2e2e4a;
         display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 8px;
+    }
+    .ctrl-row {
+        display: flex;
         align-items: center;
         gap: 8px;
+        width: 100%%;
     }
     .ctrl-label {
         font-size: 10px;
@@ -546,14 +561,23 @@ function hs(path) {
         %s
     </div>
     <div class="controls">
-        <span class="ctrl-label" id="alphaLabel">%d%%</span>
-        <input type="range" min="10" max="100" value="%d"
-            oninput="document.getElementById('alphaLabel').textContent=this.value+'%%'"
-            onchange="hs('/alpha/'+(this.value/100))">
+        <div class="ctrl-row">
+            <span class="ctrl-label" id="alphaLabel">%d%%</span>
+            <input type="range" min="10" max="100" value="%d"
+                oninput="document.getElementById('alphaLabel').textContent=this.value+'%%'"
+                onchange="hs('/alpha/'+(this.value/100))">
+        </div>
+        <div class="ctrl-row">
+            <span class="ctrl-label" id="fontLabel">%dpx</span>
+            <input type="range" min="10" max="20" value="%d"
+                oninput="document.getElementById('fontLabel').textContent=this.value+'px'; document.body.style.fontSize=this.value+'px'"
+                onchange="hs('/fontsize/'+this.value)">
+        </div>
     </div>
 </body>
 </html>
     ]],
+        panelState.fontSize,
         cfg.port,
         unreadCount == 0 and " zero" or "",
         unreadCount > 0 and tostring(unreadCount) or "0",
@@ -562,7 +586,9 @@ function hs(path) {
         panelState.filter == "done" and " active" or "",
         items == "" and '<div class="empty">No notifications</div>' or items,
         alphaPct,
-        alphaPct
+        alphaPct,
+        panelState.fontSize,
+        panelState.fontSize
     )
 end
 
