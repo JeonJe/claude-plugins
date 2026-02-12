@@ -47,6 +47,7 @@ local callbackServer = nil
 local panelState = {
     alpha = cfg.panel.alpha,
     filter = "all", -- "all", "input", "done"
+    fontSize = 13,
 }
 
 -- ─── HTTP callback server ─────────────────────────────────────────
@@ -67,6 +68,12 @@ callbackServer:setCallback(function(_, path)
         end
     elseif path:match("^/readall") then
         ClaudeNotify.markAllRead()
+    elseif path:match("^/fontsize/") then
+        local val = tonumber(path:match("^/fontsize/([%d]+)"))
+        if val then
+            panelState.fontSize = val
+            ClaudeNotify.updatePanel()
+        end
     elseif path:match("^/filter/") then
         local mode = path:match("^/filter/(%a+)")
         if mode then
@@ -149,6 +156,7 @@ function ClaudeNotify.markAllRead()
 end
 
 function ClaudeNotify.setAlpha(value)
+    if value < 0.1 then value = 0.1 end
     panelState.alpha = value
     if webview then
         webview:alpha(value)
@@ -290,13 +298,14 @@ function ClaudeNotify.generateHTML()
 <html>
 <head>
 <style>
+    :root { --fs: %dpx; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
         background: #161625;
         color: #d4d4e0;
         padding: 0;
-        font-size: 13px;
+        font-size: var(--fs);
         -webkit-user-select: none;
         display: flex;
         flex-direction: column;
@@ -421,7 +430,7 @@ function ClaudeNotify.generateHTML()
     .row-msg {
         padding-left: 12px;
         line-height: 1.4;
-        font-size: 12.5px;
+        font-size: var(--fs);
     }
 
     .item.read .row-msg { color: #6a6a80; }
@@ -439,7 +448,7 @@ function ClaudeNotify.generateHTML()
         box-shadow: 0 0 4px #5a8aff88;
     }
     .icon {
-        font-size: 9px;
+        font-size: calc(var(--fs) * 0.7);
         font-weight: 700;
         padding: 2px 5px;
         border-radius: 3px;
@@ -451,13 +460,13 @@ function ClaudeNotify.generateHTML()
     .icon.other { background: #2a2a3a; color: #777; }
     .time {
         color: #5a5a7a;
-        font-size: 11px;
+        font-size: calc(var(--fs) * 0.85);
         font-family: "SF Mono", Menlo, monospace;
         flex-shrink: 0;
         margin-left: auto;
     }
     .tag {
-        font-size: 10px;
+        font-size: calc(var(--fs) * 0.77);
         padding: 1px 6px;
         border-radius: 4px;
         font-family: "SF Mono", Menlo, monospace;
@@ -479,23 +488,49 @@ function ClaudeNotify.generateHTML()
         color: #444;
         text-align: center;
         padding: 60px 0;
-        font-size: 13px;
     }
 
     .controls {
         flex-shrink: 0;
-        padding: 8px 14px;
         background: #1e1e35;
         border-top: 1px solid #2e2e4a;
+    }
+    .ctrl-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        cursor: pointer;
+        color: #4a4a6a;
+        font-size: 10px;
+        transition: color 0.15s;
+    }
+    .ctrl-toggle:hover { color: #8b8eff; }
+    .ctrl-panel {
+        display: none;
+        padding: 6px 14px 8px;
+        gap: 4px;
+        flex-direction: column;
+    }
+    .ctrl-panel.open { display: flex; }
+    .ctrl-row {
         display: flex;
         align-items: center;
         gap: 8px;
+        width: 100%%;
     }
     .ctrl-label {
         font-size: 10px;
         color: #5a5a7a;
         flex-shrink: 0;
-        min-width: 28px;
+        min-width: 48px;
+    }
+    .ctrl-val {
+        font-size: 10px;
+        color: #7a7a9a;
+        flex-shrink: 0;
+        min-width: 32px;
+        text-align: right;
     }
     input[type="range"] {
         -webkit-appearance: none;
@@ -532,9 +567,7 @@ function hs(path) {
             <span class="title">Claude Code</span>
             <div class="header-right">
                 <span class="badge%s">%s</span>
-                <div class="hdr-btn" onclick="hs('/readall')">Read All</div>
                 <div class="hdr-btn" onclick="hs('/clear')">Clear</div>
-                <div class="hdr-btn" onclick="hs('/restart')">Restart</div>
                 <div class="hdr-btn danger" onclick="hs('/quit')">Quit</div>
             </div>
         </div>
@@ -548,14 +581,28 @@ function hs(path) {
         %s
     </div>
     <div class="controls">
-        <span class="ctrl-label" id="alphaLabel">%d%%</span>
-        <input type="range" min="10" max="100" value="%d"
-            oninput="document.getElementById('alphaLabel').textContent=this.value+'%%'"
-            onchange="hs('/alpha/'+(this.value/100))">
+        <div class="ctrl-toggle" onclick="var p=document.getElementById('ctrlPanel');p.classList.toggle('open');this.textContent=p.classList.contains('open')?'▾ Settings':'▸ Settings'">▸ Settings</div>
+        <div class="ctrl-panel" id="ctrlPanel">
+            <div class="ctrl-row">
+                <span class="ctrl-label">Opacity</span>
+                <input type="range" min="10" max="100" value="%d"
+                    oninput="document.getElementById('alphaVal').textContent=this.value+'%%'"
+                    onchange="hs('/alpha/'+(this.value/100))">
+                <span class="ctrl-val" id="alphaVal">%d%%</span>
+            </div>
+            <div class="ctrl-row">
+                <span class="ctrl-label">Font</span>
+                <input type="range" min="10" max="20" value="%d"
+                    oninput="document.getElementById('fontVal').textContent=this.value+'px'; document.documentElement.style.setProperty('--fs',this.value+'px')"
+                    onchange="hs('/fontsize/'+this.value)">
+                <span class="ctrl-val" id="fontVal">%dpx</span>
+            </div>
+        </div>
     </div>
 </body>
 </html>
     ]],
+        panelState.fontSize,
         cfg.port,
         unreadCount == 0 and " zero" or "",
         unreadCount > 0 and tostring(unreadCount) or "0",
@@ -564,7 +611,9 @@ function hs(path) {
         panelState.filter == "done" and " active" or "",
         items == "" and '<div class="empty">No notifications</div>' or items,
         alphaPct,
-        alphaPct
+        alphaPct,
+        panelState.fontSize,
+        panelState.fontSize
     )
 end
 
