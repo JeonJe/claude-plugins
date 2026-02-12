@@ -532,9 +532,7 @@ function hs(path) {
             <span class="title">Claude Code</span>
             <div class="header-right">
                 <span class="badge%s">%s</span>
-                <div class="hdr-btn" onclick="hs('/readall')">Read All</div>
                 <div class="hdr-btn" onclick="hs('/clear')">Clear</div>
-                <div class="hdr-btn" onclick="hs('/restart')">Restart</div>
                 <div class="hdr-btn danger" onclick="hs('/quit')">Quit</div>
             </div>
         </div>
