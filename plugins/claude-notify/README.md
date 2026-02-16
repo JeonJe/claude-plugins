@@ -19,6 +19,18 @@ Claude Code (Notification/Stop hook)
 
 macOS notification center stacks alerts with no context. When running multiple Claude Code sessions, you can't tell which session needs attention or jump to it directly. Claude Notify replaces that with a single always-on-top panel where every notification shows the project, session, and lets you click to navigate.
 
+## Screenshots
+
+### Notification Panel
+Always-on-top mini-window with unread indicators, project/session tags, and type filters.
+
+![Notification Panel](../../assets/notify-panel.png)
+
+### Toast Banner
+Slides down from top center on new notification. Click to jump to source pane.
+
+![Toast Banner](../../assets/notify-toast.png)
+
 ## Features
 
 ### Notification Panel
