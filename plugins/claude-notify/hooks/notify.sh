@@ -81,10 +81,18 @@ if [ -z "$MESSAGE" ]; then
     esac
 fi
 
-# Escape single quotes to prevent Lua injection
-MSG_SAFE="${MESSAGE//\'/\'\\\'\'}"
-ST_SAFE="${SESSION_TARGET//\'/\'\\\'\'}"
-PI_SAFE="${PANE_ID//\'/\'\\\'\'}"
-PJ_SAFE="${PROJECT//\'/\'\\\'\'}"
+# Escape for safe Lua string embedding: backslashes first, then single quotes
+lua_escape() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\'/\'\\\'\'}"
+    # Truncate to prevent oversized input
+    printf '%s' "${s:0:200}"
+}
+
+MSG_SAFE=$(lua_escape "$MESSAGE")
+ST_SAFE=$(lua_escape "$SESSION_TARGET")
+PI_SAFE=$(lua_escape "$PANE_ID")
+PJ_SAFE=$(lua_escape "$PROJECT")
 
 "$HS_PATH" -c "ClaudeNotify.push('${MSG_SAFE}', '${ST_SAFE}', '${PI_SAFE}', '${PJ_SAFE}')"

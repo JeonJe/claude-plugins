@@ -315,9 +315,8 @@ def copy_hook_file():
 
         shutil.copy2(source_hook, dest_path)
 
-        # Set executable permission (owner + group + other execute)
-        current_mode = dest_path.stat().st_mode
-        dest_path.chmod(current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        # Set executable permission (owner only)
+        dest_path.chmod(0o755)
 
         _print_ok(f"Hook file        {dest_path}")
         return True

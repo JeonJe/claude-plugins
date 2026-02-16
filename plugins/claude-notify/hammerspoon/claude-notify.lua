@@ -107,7 +107,12 @@ end
 
 local function isValidTmuxId(id)
     if not id or id == "none" then return false end
-    return id:match("^[%w_:%%.-]+$") ~= nil
+    if #id > 128 then return false end
+    return id:match("^[%w_:.-]+$") ~= nil
+end
+
+local function shellEscape(s)
+    return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
 -- ─── Core functions ───────────────────────────────────────────────
@@ -140,10 +145,10 @@ function ClaudeNotify.focusPane(n)
         local session = n.sessionTarget:match("^([^:]+)")
         if not session or not session:match("^[%w_.-]+$") then return end
         hs.timer.doAfter(0.3, function()
-            hs.execute(cfg.tmux_path .. " switch-client -t " .. session .. " 2>/dev/null", true)
-            hs.execute(cfg.tmux_path .. " select-window -t " .. n.sessionTarget .. " 2>/dev/null", true)
+            hs.execute(cfg.tmux_path .. " switch-client -t " .. shellEscape(session) .. " 2>/dev/null", true)
+            hs.execute(cfg.tmux_path .. " select-window -t " .. shellEscape(n.sessionTarget) .. " 2>/dev/null", true)
             if isValidTmuxId(n.paneId) then
-                hs.execute(cfg.tmux_path .. " select-pane -t " .. n.paneId .. " 2>/dev/null", true)
+                hs.execute(cfg.tmux_path .. " select-pane -t " .. shellEscape(n.paneId) .. " 2>/dev/null", true)
             end
         end)
     end

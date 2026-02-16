@@ -185,7 +185,7 @@ def scan_local_skills():
                     "name": name,
                     "description": info.get("description", ""),
                     "source": "local",
-                    "path": str(skill_dir)
+                    "path": "~/" + str(skill_dir.relative_to(HOME))
                 }
     return skills
 
@@ -219,12 +219,16 @@ def scan_plugin_skills():
                             full_name = f"{base_plugin}:{skill_name}" if skill_name != base_plugin else base_plugin
 
                             info = parse_skill_md(skill_file)
+                            try:
+                                rel_path = "~/" + str(skill_dir.relative_to(HOME))
+                            except ValueError:
+                                rel_path = str(skill_dir)
                             skills[full_name] = {
                                 "name": full_name,
                                 "description": info.get("description", ""),
                                 "source": "plugin",
                                 "plugin": plugin_name,
-                                "path": str(skill_dir)
+                                "path": rel_path
                             }
 
             root_skill = install_path / "SKILL.md"
@@ -232,12 +236,16 @@ def scan_plugin_skills():
                 base_plugin = plugin_name.split("@")[0]
                 info = parse_skill_md(root_skill)
                 if base_plugin not in skills:
+                    try:
+                        rel_path = "~/" + str(install_path.relative_to(HOME))
+                    except ValueError:
+                        rel_path = str(install_path)
                     skills[base_plugin] = {
                         "name": base_plugin,
                         "description": info.get("description", ""),
                         "source": "plugin",
                         "plugin": plugin_name,
-                        "path": str(install_path)
+                        "path": rel_path
                     }
 
     return skills
@@ -257,7 +265,7 @@ def scan_commands():
                 "name": name,
                 "description": info.get("description", ""),
                 "source": "command",
-                "path": str(cmd_file)
+                "path": "~/" + str(cmd_file.relative_to(HOME))
             }
     return skills
 
@@ -277,11 +285,15 @@ def scan_project_skills():
             if skill_file.exists():
                 name = skill_dir.name
                 info = parse_skill_md(skill_file)
+                try:
+                    rel_path = "~/" + str(skill_dir.relative_to(HOME))
+                except ValueError:
+                    rel_path = str(skill_dir)
                 skills[f"project:{name}"] = {
                     "name": name,
                     "description": info.get("description", ""),
                     "source": "project",
-                    "path": str(skill_dir)
+                    "path": rel_path
                 }
     return skills
 

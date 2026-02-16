@@ -5,6 +5,7 @@ Skillbook Dashboard v2.0 - Enhanced with Detail Modal, Search, Workflows
 
 import json
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -218,7 +219,7 @@ def scan_local_skills():
                     "name": name,
                     "description": info.get("description", ""),
                     "source": "local",
-                    "path": str(skill_file),
+                    "path": "~/" + str(skill_file.relative_to(HOME)),
                     "useCases": info.get("useCases", []),
                     "triggers": info.get("triggers", []),
                     "dontUse": info.get("dontUse", []),
@@ -238,7 +239,7 @@ def scan_commands():
                 "name": name,
                 "description": info.get("description", ""),
                 "source": "command",
-                "path": str(cmd_file),
+                "path": "~/" + str(cmd_file.relative_to(HOME)),
                 "useCases": info.get("useCases", []),
                 "triggers": info.get("triggers", []),
                 "dontUse": info.get("dontUse", []),
@@ -271,11 +272,15 @@ def scan_plugin_skills():
                             skill_name = skill_dir.name
                             full_name = f"{base_plugin}:{skill_name}" if skill_name != base_plugin else base_plugin
                             info = parse_skill_md(skill_file)
+                            try:
+                                rel_path = "~/" + str(skill_file.relative_to(HOME))
+                            except ValueError:
+                                rel_path = str(skill_file)
                             skills[full_name] = {
                                 "name": full_name,
                                 "description": info.get("description", ""),
                                 "source": "plugin",
-                                "path": str(skill_file),
+                                "path": rel_path,
                                 "useCases": info.get("useCases", []),
                                 "triggers": info.get("triggers", []),
                                 "dontUse": info.get("dontUse", []),
@@ -286,11 +291,15 @@ def scan_plugin_skills():
                 base_plugin = plugin_name.split("@")[0]
                 info = parse_skill_md(root_skill)
                 if base_plugin not in skills:
+                    try:
+                        rel_path = "~/" + str(root_skill.relative_to(HOME))
+                    except ValueError:
+                        rel_path = str(root_skill)
                     skills[base_plugin] = {
                         "name": base_plugin,
                         "description": info.get("description", ""),
                         "source": "plugin",
-                        "path": str(root_skill),
+                        "path": rel_path,
                         "useCases": info.get("useCases", []),
                         "triggers": info.get("triggers", []),
                         "dontUse": info.get("dontUse", []),
@@ -384,7 +393,7 @@ def generate_dashboard():
             "triggers": info.get("triggers", []),
             "dontUse": info.get("dontUse", []),
             "workflow": info.get("workflow", ""),
-            "path": str(Path(info.get("path", "")).relative_to(HOME)) if info.get("path") else "",
+            "path": info.get("path", ""),
         })
 
     # Category stats
@@ -913,10 +922,12 @@ def generate_dashboard():
             recContainer.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.85rem;">Keep using skills to get recommendations!</p>';
         }} else {{
             recommendations.forEach(rec => {{
+                const safeRecAttr = rec.skill.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+                const safeRecHtml = rec.skill.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
                 recContainer.innerHTML += `
-                    <div class="rec-item" onclick="openSkillModal('${{rec.skill}}')">
+                    <div class="rec-item" data-skill="${{safeRecAttr}}" onclick="openSkillModal(this.dataset.skill)">
                         <div>
-                            <div class="rec-skill">/${{rec.skill}}</div>
+                            <div class="rec-skill">/${{safeRecHtml}}</div>
                             <div class="rec-reason">${{rec.reason}}</div>
                         </div>
                         <span>→</span>
@@ -945,6 +956,7 @@ def generate_dashboard():
         Object.entries(categoryStats).forEach(([cat, info]) => {{
             if (info.total === 0) return;
             const percent = Math.round((info.discovered / info.total) * 100);
+            const safeColor = /^#[0-9a-fA-F]{{3,8}}$/.test(info.color) ? info.color : '#888';
             progressContainer.innerHTML += `
                 <div class="category-progress">
                     <div class="category-header">
@@ -952,7 +964,7 @@ def generate_dashboard():
                         <span style="color: var(--text-secondary);">${{info.discovered}}/${{info.total}} | Lv.${{info.totalLevel}}</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${{percent}}%; background: ${{info.color}};"></div>
+                        <div class="progress-fill" style="width: ${{percent}}%; background: ${{safeColor}};"></div>
                     </div>
                 </div>
             `;
@@ -1021,32 +1033,36 @@ def generate_dashboard():
                 const pokemonUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${{skill.pokemonId}}.png`;
                 const paddedId = String(skill.pokemonId).padStart(3, '0');
                 const sourceIcon = {{'local': '💾', 'command': '📜', 'plugin': '🔌', 'stats': '📊'}}[skill.source] || '';
+                const safeNameAttr = skill.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+                const safeNameHtml = skill.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                const safeCatColor = /^#[0-9a-fA-F]{{3,8}}$/.test(skill.categoryColor) ? skill.categoryColor : '#888';
 
                 return `
                     <div class="skill-card ${{isUndiscovered ? 'undiscovered' : ''}}"
-                         style="border-color: ${{skill.categoryColor}}33;"
-                         onclick="openSkillModal('${{skill.name}}')">
+                         style="border-color: ${{safeCatColor}}33;"
+                         data-skill="${{safeNameAttr}}"
+                         onclick="openSkillModal(this.dataset.skill)">
                         ${{skill.pinned ? '<div class="pinned-badge">📌</div>' : ''}}
                         <div class="source-badge">${{sourceIcon}} ${{skill.source}}</div>
-                        <div class="pokemon-image-container" style="background: linear-gradient(135deg, ${{skill.categoryColor}}15, ${{skill.categoryColor}}05);">
+                        <div class="pokemon-image-container" style="background: linear-gradient(135deg, ${{safeCatColor}}15, ${{safeCatColor}}05);">
                             <div class="pokemon-id">#${{paddedId}}</div>
                             <img src="${{pokemonUrl}}" class="pokemon-image" loading="lazy"
                                  onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${{skill.pokemonId}}.png'">
                         </div>
                         <div class="card-header">
-                            <span class="skill-name">/${{skill.name}}</span>
+                            <span class="skill-name">/${{safeNameHtml}}</span>
                             <span class="skill-level ${{skill.level === 0 ? 'zero' : ''}}">Lv.${{skill.level}}</span>
                         </div>
                         <div class="stars ${{skill.stars === 0 ? 'empty' : ''}}">${{stars}}</div>
                         <div class="skill-desc">${{skill.description || 'No description'}}</div>
                         <div class="card-footer">
-                            <span class="category-badge" style="background: ${{skill.categoryColor}}22; color: ${{skill.categoryColor}};">
+                            <span class="category-badge" style="background: ${{safeCatColor}}22; color: ${{safeCatColor}};">
                                 ${{skill.categoryIcon}} ${{skill.categoryName}}
                             </span>
                             <span class="uses-count"><strong>${{skill.uses}}</strong> uses</span>
                         </div>
                         <div class="exp-bar">
-                            <div class="exp-fill" style="width: ${{expPercent}}%; background: ${{skill.categoryColor}};"></div>
+                            <div class="exp-fill" style="width: ${{expPercent}}%; background: ${{safeCatColor}};"></div>
                         </div>
                     </div>
                 `;
@@ -1183,12 +1199,26 @@ def generate_dashboard():
 
     return str(OUTPUT_FILE)
 
+def _open_file(path):
+    """Open a file with the platform's default application."""
+    system = platform.system()
+    try:
+        if system == "Darwin":
+            subprocess.run(["open", path], check=True)
+        elif system == "Linux":
+            subprocess.run(["xdg-open", path], check=True)
+        elif system == "Windows":
+            os.startfile(path)
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
+        print(f"Could not auto-open. File at: {path}", file=sys.stderr)
+
+
 def main():
     output_path = generate_dashboard()
     print(f"Dashboard: {output_path}")
 
     if '--open' in sys.argv or len(sys.argv) == 1:
-        subprocess.run(['open', output_path])
+        _open_file(output_path)
 
 if __name__ == "__main__":
     main()
