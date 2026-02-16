@@ -1,0 +1,13 @@
+{
+  "name": "skill-audit",
+  "version": "1.0.0",
+  "description": "Audit Claude skills and commands for publish readiness with 6-category rubric scoring and concrete fixes",
+  "author": {
+    "name": "JeonJe",
+    "url": "https://github.com/JeonJe"
+  },
+  "repository": "https://github.com/JeonJe/claude-plugins",
+  "license": "MIT",
+  "keywords": ["claude-code", "plugin", "skill-audit", "quality", "best-practices", "publish-readiness"],
+  "skills": "./skills/skill-audit"
+}
