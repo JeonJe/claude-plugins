@@ -1,163 +1,139 @@
 # Skillbook
 
-Pokemon Pokedex-style skill dashboard for Claude Code. Every skill you use becomes a collectible card with levels, rarity, and achievements.
+Pokemon Pokedex-style skill dashboard for Claude Code.
+
+```
+/commit, /study, /interview ...
+       |
+       v
+  Hook auto-tracks usage
+       |
+       v
+  /skillbook opens dashboard
+       |
+       v
+  Cards level up + earn rarity stars
+```
+
+## Why
+
+Claude Code skills are invisible. You don't know which ones you use most, which you've never tried, or how your usage patterns look over time. Skillbook makes every skill a collectible card with levels and achievements, turning routine usage into a visual progress tracker.
 
 ## Quick Start
 
+> Requires: Python 3.8+, Browser
+
 ```bash
-/skillbook install     # Auto-setup everything
+/skillbook install     # Auto-setup (hooks, config, files)
 /skillbook             # Open dashboard
 ```
 
-That's it. No manual configuration needed. The installer handles copying files, merging hooks, and creating config.
-
-## What It Does
-
-```
-1. You use any /skill (e.g., /commit, /study, /interview)
-2. Hook auto-tracks usage count in skill-stats.json
-3. /skillbook opens a web dashboard showing your collection
-4. Skills level up and earn rarity stars as you use them more
-```
-
-## Usage
-
-| Command | Description |
-|---------|-------------|
-| `/skillbook` | Open web dashboard in browser (default) |
-| `/skillbook stats` | Show summary in terminal |
-| `/skillbook used` | Show only discovered (used) skills |
-| `/skillbook pinned` | Show pinned/favorite skills |
-| `/skillbook pin <name>` | Toggle favorite on a skill |
-| `/skillbook <category>` | Filter by category (e.g., `study`, `git`, `code`) |
-| `/skillbook install` | Auto-setup: copy files, merge hooks, create config |
-| `/skillbook uninstall` | Remove hooks (keeps skill files) |
-| `/skillbook uninstall --purge` | Remove hooks + skill files (keeps stats) |
-| `/skillbook status` | Show installation health |
+No manual configuration needed.
 
 ## Screenshots
 
 ### Dashboard Overview
-
-See your entire skill journey at a glance: total discovered skills, cumulative level, achievement badges, personalized recommendations, workflow sequences, category progress bars, and a 7-day usage trend chart. Know exactly where you stand and what to explore next.
+Total discovered skills, level, achievements, recommendations, workflow sequences, category progress, 7-day usage trend.
 
 ![Dashboard Overview](../../assets/dashboard-full.png)
 
 ### Skill Cards
-
-Every skill you use becomes a collectible card with its own Pokemon sprite (determined by skill name), level, rarity stars, category badge, and usage count. Pinned favorites appear first. Instantly see which skills you rely on most and which categories you're building expertise in.
+Each skill becomes a collectible card with Pokemon sprite, level, rarity stars, category badge, usage count. Undiscovered skills appear as dark silhouettes.
 
 ![Skill Cards](../../assets/skill-cards.png)
-
-### Undiscovered Skills
-
-Skills you haven't tried yet appear as dark silhouettes at the bottom of your collection, encouraging you to experiment with new workflows. The contrast between colorful discovered cards and shadowed unknowns creates a natural motivation to "catch 'em all."
-
 ![Undiscovered Cards](../../assets/skill-cards-bottom.png)
 
 ### Skill Detail Modal
-
-Click any card to open a detailed view with total uses, current level, and last-used date. A one-click copy button lets you paste the skill command directly into Claude Code.
+Click any card for detailed stats and one-click command copy.
 
 ![Detail Modal](../../assets/skill-detail-modal.png)
 
 ## Features
 
-### Skill Cards
-Each skill gets a unique Pokemon sprite (deterministic hash). Cards show level, rarity stars, category, and usage count.
+### Leveling & Rarity
 
-### Leveling System
-```
-Level = floor(sqrt(uses * 10))
+Every skill levels up with usage (`Level = floor(sqrt(uses * 10))`).
 
-Example:
-  1 use  → Lv.3
-  5 uses → Lv.7
-  10 uses → Lv.10
-  50 uses → Lv.22
-  100 uses → Lv.31
-```
-
-### Rarity Tiers
-
-| Stars | Tier | Uses Required |
-|-------|------|---------------|
+| Stars | Tier | Uses |
+|-------|------|------|
 | ★★★★★ | Legendary | 100+ |
-| ★★★★☆ | Epic | 50-99 |
-| ★★★☆☆ | Rare | 20-49 |
-| ★★☆☆☆ | Uncommon | 5-19 |
-| ★☆☆☆☆ | Common | 1-4 |
+| ★★★★☆ | Epic | 50+ |
+| ★★★☆☆ | Rare | 20+ |
+| ★★☆☆☆ | Uncommon | 5+ |
+| ★☆☆☆☆ | Common | 1+ |
 | ? | Undiscovered | 0 |
 
 ### Achievements
-Unlock badges as you reach milestones:
 
 | Badge | Name | Condition |
 |-------|------|-----------|
 | 🩸 | First Blood | Use your first skill |
 | 🧭 | Explorer | Discover 10+ skills |
-| 🔥 | Dedicated | Use any skill 10+ times |
-| 👑 | Expert | Use any skill 50+ times |
-| 🌍 | Polyglot | Use skills from 5+ categories |
+| 🔥 | Dedicated | Any skill 10+ uses |
+| 👑 | Expert | Any skill 50+ uses |
+| 🌍 | Polyglot | 5+ categories used |
 | 🚗 | Daily Driver | 100+ total uses |
 
-### Categories
-Skills are auto-categorized by keyword matching:
+### Auto-Categorization
 
-| Category | Keywords | How It Works |
-|----------|----------|--------------|
-| 📁 Git | commit, pr, branch, worktree, git | If skill name contains "commit" → Git category |
-| 💻 Code | code, review, refactor, fix | If skill name contains "review" → Code category |
-| 🧪 Test | test, e2e, coverage | If skill name contains "test" → Test category |
-| 📝 Docs | doc, update-docs, codemaps | If skill name contains "doc" → Docs category |
-| 📋 Plan | plan, issue, clarify | If skill name contains "plan" → Plan category |
-| 📚 Study | study, gg, interview, learn | If skill name contains "study" → Study category |
-| 📄 Resume | resume | If skill name contains "resume" → Resume category |
-| 🧩 Algo | algo | If skill name contains "algo" → Algo category |
-| 🎯 PM | jira, jd, ticket, agile | If skill name contains "jira" → PM category |
-| 🔌 Plugin | sisyphus, council, calendar | Plugin-related skills |
-| ✨ Misc | (no match) | Fallback for unmatched skills |
+Skills are classified by keyword matching in the name:
 
-**Example:** Your skill `/my-code-review` automatically goes to 💻 Code category because it contains "review".
+| Category | Keywords |
+|----------|----------|
+| 📁 Git | commit, pr, branch, worktree, git |
+| 💻 Code | code, review, refactor, fix |
+| 🧪 Test | test, e2e, coverage |
+| 📝 Docs | doc, update-docs, codemaps |
+| 📋 Plan | plan, issue, clarify |
+| 📚 Study | study, gg, interview, learn |
+| 🧩 Algo | algo |
+| 🎯 PM | jira, jd, ticket, agile |
+| 🔌 Plugin | sisyphus, council, calendar |
+| ✨ Misc | (fallback) |
 
-### Web Dashboard
-Interactive HTML dashboard with:
-- Skill cards with Pokemon sprites
-- Search and filter (All / Discovered / Pinned / Local / Commands)
-- Sort by uses, level, recent, or name
-- Category progress bars
-- 7-day usage trend chart
-- Achievement badges
-- Workflow recommendations
-- Click any card for detailed skill info
+### Dashboard
 
-## Configuration (Optional)
+Interactive HTML dashboard with search, filter (All / Discovered / Pinned / Local / Commands), sort (uses / level / recent / name), category progress bars, 7-day trend chart, workflow recommendations.
 
-**Zero config required.** Stats auto-save to `~/.claude/skillbook-stats.json`.
+## Usage
 
-To customize (e.g., move stats to Obsidian vault), create `~/.claude/skillbook.config.json`:
+| Command | Description |
+|---------|-------------|
+| `/skillbook` | Open web dashboard (default) |
+| `/skillbook stats` | Terminal summary |
+| `/skillbook used` | Discovered skills only |
+| `/skillbook pinned` | Pinned favorites |
+| `/skillbook pin <name>` | Toggle pin |
+| `/skillbook <category>` | Filter by category |
+| `/skillbook install` | Auto-setup |
+| `/skillbook uninstall` | Remove hooks (keeps data) |
+| `/skillbook uninstall --purge` | Remove hooks + skill files |
+| `/skillbook status` | Installation health check |
+
+## Configuration
+
+**Zero config required.** Optional customization via `~/.claude/skillbook.config.json`:
 
 ```json
 {
-  "statsFile": "~/path/to/your/skill-stats.json",
+  "statsFile": "~/path/to/skill-stats.json",
   "outputDir": "~/path/to/dashboard/output",
   "language": "en"
 }
 ```
-`statsFile` and `outputDir` must be under your home directory (`~`).
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `statsFile` | `~/.claude/skillbook-stats.json` | Where usage data is stored (any path under `~`) |
-| `outputDir` | `~/.claude/skillbook/` | Where dashboard HTML is generated (any path under `~`) |
-| `language` | `en` | Dashboard language (`en` or `ko`) |
+| `statsFile` | `~/.claude/skillbook-stats.json` | Usage data location |
+| `outputDir` | `~/.claude/skillbook/` | Dashboard HTML output |
+| `language` | `en` | `en` or `ko` |
 
-## Manual Installation
+All paths must be under `~`.
+
+---
 
 <details>
-<summary>Click to expand manual steps (not recommended - use /skillbook install instead)</summary>
-
-### Step 1: Install Plugin
+<summary>Manual Installation</summary>
 
 ```bash
 # Via marketplace
@@ -167,11 +143,11 @@ To customize (e.g., move stats to Obsidian vault), create `~/.claude/skillbook.c
 # Or manually
 git clone https://github.com/JeonJe/claude-plugins.git
 cp -r claude-plugins/plugins/skillbook/skills/skillbook ~/.claude/skills/
+cp claude-plugins/plugins/skillbook/hooks/skill-usage-tracker.py ~/.claude/hooks/
+chmod +x ~/.claude/hooks/skill-usage-tracker.py
 ```
 
-### Step 2: Enable Auto-Tracking (Required)
-
-Add the usage tracking hook to `~/.claude/settings.json`:
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -190,58 +166,45 @@ Add the usage tracking hook to `~/.claude/settings.json`:
 }
 ```
 
-> **Note**: If you already have `UserPromptSubmit` hooks, add the new hook entry to the existing array.
-
-Copy the hook file:
-
-```bash
-cp claude-plugins/plugins/skillbook/hooks/skill-usage-tracker.py ~/.claude/hooks/
-chmod +x ~/.claude/hooks/skill-usage-tracker.py
-```
-
-### Step 3: Verify
-
-```bash
-# Use any skill, then check if it was tracked:
-/skillbook stats
-```
-
-You should see `Total Uses: 1x` after using your first skill.
-
 </details>
 
-## Troubleshooting
+<details>
+<summary>Troubleshooting</summary>
 
 | Problem | Solution |
 |---------|----------|
-| `/skillbook install` fails | Run `/skillbook status` to see what's missing. Check Python version: `python3 --version` should be 3.8+ |
-| Hook not tracking skills | Verify `~/.claude/settings.json` has a `UserPromptSubmit` entry with the hook command. Run `/skillbook status` to verify. |
-| Dashboard won't open | Make sure Python 3.8+ is installed: `python3 --version`. Try `/skillbook terminal stats` to check if tracking works. |
-| Stats not updating | Check that hook is executable: `ls -l ~/.claude/hooks/skill-usage-tracker.py` should show `x`. Verify config path in `~/.claude/skillbook.config.json`. |
-| "Permission denied" on hook | Fix executable permission: `chmod +x ~/.claude/hooks/skill-usage-tracker.py` |
-| Existing hook conflict | If you have an old hook installed, uninstall first: `/skillbook uninstall`, then `/skillbook install` |
+| Install fails | `/skillbook status` to diagnose. Python 3.8+ required. |
+| Hook not tracking | Check `~/.claude/settings.json` has `UserPromptSubmit` hook entry. |
+| Dashboard won't open | Verify `python3 --version` is 3.8+. Try `/skillbook terminal stats`. |
+| Stats not updating | Check hook is executable: `ls -l ~/.claude/hooks/skill-usage-tracker.py` |
+| Permission denied | `chmod +x ~/.claude/hooks/skill-usage-tracker.py` |
+| Hook conflict | `/skillbook uninstall` then `/skillbook install` |
 
-## Uninstall
+</details>
 
-Remove skillbook from your system:
+<details>
+<summary>Uninstall</summary>
 
 ```bash
-/skillbook uninstall           # Remove hooks only (keeps stats and skill files)
-/skillbook uninstall --purge   # Remove hooks + skill files (keeps stats as backup)
+/skillbook uninstall           # Remove hooks only (keeps stats)
+/skillbook uninstall --purge   # Remove hooks + skill files (keeps stats)
 ```
 
-**Note**: Stats file is never deleted. Your data is safe.
+Stats file is never deleted.
 
-## File Structure
+</details>
+
+<details>
+<summary>File Structure</summary>
 
 ```
 skillbook/
 ├── hooks/
-│   └── skill-usage-tracker.py   # Auto-counts /skill usage (UserPromptSubmit hook)
+│   └── skill-usage-tracker.py   # Usage tracking hook
 ├── skills/skillbook/
-│   ├── SKILL.md                  # Skill definition for Claude
+│   ├── SKILL.md                  # Skill definition
 │   ├── skillbook.py              # CLI interface
-│   ├── skillbook_dashboard.py    # Web dashboard generator
+│   ├── skillbook_dashboard.py    # Dashboard generator
 │   ├── installer.py              # Auto-installer
 │   ├── config/                   # Category, level, rarity docs
 │   └── templates/                # Card format templates
@@ -249,11 +212,13 @@ skillbook/
 └── README.md
 ```
 
+</details>
+
 ## Requirements
 
 - Python 3.8+
 - Browser (for dashboard)
-- No other dependencies (no `jq`, no npm packages)
+- No other dependencies
 
 ## License
 
