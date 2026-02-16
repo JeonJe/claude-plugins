@@ -19,18 +19,6 @@ Claude Code (Notification/Stop hook)
 
 macOS notification center stacks alerts with no context. When running multiple Claude Code sessions, you can't tell which session needs attention or jump to it directly. Claude Notify replaces that with a single always-on-top panel where every notification shows the project, session, and lets you click to navigate.
 
-## Quick Start
-
-> Requires: macOS, [Hammerspoon](https://www.hammerspoon.org/) (CLI enabled), python3
-
-```bash
-git clone https://github.com/JeonJe/claude-plugins.git
-cd claude-plugins/plugins/claude-notify
-bash setup.sh
-```
-
-The setup script auto-detects your environment (terminal, tmux, Hammerspoon path) and generates all config files.
-
 ## Features
 
 ### Notification Panel
@@ -80,6 +68,18 @@ Falls back to generic messages if python3 is unavailable.
 - Hotkey toggle (default: Ctrl+Shift+N)
 - Works with or without tmux
 - Local HTTP only (no external network calls)
+
+## Quick Start
+
+> Requires: macOS, [Hammerspoon](https://www.hammerspoon.org/) (CLI enabled), python3
+
+```bash
+git clone https://github.com/JeonJe/claude-plugins.git
+cd claude-plugins/plugins/claude-notify
+bash setup.sh
+```
+
+The setup script auto-detects your environment (terminal, tmux, Hammerspoon path) and generates all config files.
 
 ## Usage
 

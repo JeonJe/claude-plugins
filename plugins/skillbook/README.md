@@ -19,17 +19,6 @@ Pokemon Pokedex-style skill dashboard for Claude Code.
 
 Claude Code skills are invisible. You don't know which ones you use most, which you've never tried, or how your usage patterns look over time. Skillbook makes every skill a collectible card with levels and achievements, turning routine usage into a visual progress tracker.
 
-## Quick Start
-
-> Requires: Python 3.8+, Browser
-
-```bash
-/skillbook install     # Auto-setup (hooks, config, files)
-/skillbook             # Open dashboard
-```
-
-No manual configuration needed.
-
 ## Screenshots
 
 ### Dashboard Overview
@@ -94,6 +83,17 @@ Skills are classified by keyword matching in the name:
 ### Dashboard
 
 Interactive HTML dashboard with search, filter (All / Discovered / Pinned / Local / Commands), sort (uses / level / recent / name), category progress bars, 7-day trend chart, workflow recommendations.
+
+## Quick Start
+
+> Requires: Python 3.8+, Browser
+
+```bash
+/skillbook install     # Auto-setup (hooks, config, files)
+/skillbook             # Open dashboard
+```
+
+No manual configuration needed.
 
 ## Usage
 
